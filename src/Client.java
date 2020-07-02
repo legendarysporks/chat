@@ -45,7 +45,7 @@ public class Client
 				{
 					try
 					{
-						line = keyboardInput.readUTF();
+						line = keyboardInput.readLine();
 						socketOutput.writeUTF(line);
 					}
 					catch(IOException i)
@@ -80,20 +80,13 @@ public class Client
 
 
 		// close the connection
-		try
-		{
-			keyboardInput.close();
-			socketOutput.close();
-			socket.close();
-		}
-		catch(IOException i)
-		{
-			System.out.println(i);
-		}
+
 	}
 
 	public static void main(String args[])
 	{
+
 		Client client = new Client("127.0.0.1", 55556);
+
 	}
 } 

@@ -86,10 +86,10 @@ public class Server extends Thread
 	public static void main(String args[])
 	{
 		try{
-			while(true){
+
 				Server test = new Server(55556);
 				test.start();
-			}
+
 		}
 		catch(IOException i){
 			System.out.println(i);
