@@ -4,10 +4,11 @@ import java.io.*;
 
 public class Client
 {
-	// initialize socket and input output streams
+	// initialize socket and keyboardInput output streams
 	private Socket socket            = null;
-	private DataInputStream  input   = null;
-	private DataOutputStream out     = null;
+	private DataInputStream keyboardInput = null;
+	private DataInputStream socketInput = null;
+	private DataOutputStream socketOutput = null;
 
 	// constructor to put ip address and port
 	public Client(String address, int port)
@@ -18,11 +19,12 @@ public class Client
 			socket = new Socket(address, port);
 			System.out.println("Connected");
 
-			// takes input from terminal
-			input  = new DataInputStream(System.in);
+			// takes keyboardInput from terminal
+			keyboardInput = new DataInputStream(System.in);
 
 			// sends output to the socket
-			out    = new DataOutputStream(socket.getOutputStream());
+			socketOutput = new DataOutputStream(socket.getOutputStream());
+			socketInput = new DataInputStream(socket.getInputStream());
 		}
 		catch(UnknownHostException u)
 		{
@@ -33,28 +35,55 @@ public class Client
 			System.out.println(i);
 		}
 
-		// string to read message from input
-		String line = "";
+		// keep reading until "Over" is keyboardInput
+		Thread toServerThread = new Thread() {
+			public void run() {
+				// string to read message from keyboardInput
+				String line = "";
 
-		// keep reading until "Over" is input
-		while (!line.equals("Over"))
-		{
-			try
-			{
-				line = input.readLine();
-				out.writeUTF(line);
+				while (!line.equals("Over"))
+				{
+					try
+					{
+						line = keyboardInput.readUTF();
+						socketOutput.writeUTF(line);
+					}
+					catch(IOException i)
+					{
+						System.out.println(i);
+					}
+				}
 			}
-			catch(IOException i)
-			{
-				System.out.println(i);
+		};
+
+		Thread fromServerThread = new Thread() {
+			public void run() {
+				// string to read message from keyboardInput
+				String line = "";
+
+				while (!line.equals("Over"))
+				{
+					try
+					{
+						line = socketInput.readUTF();
+						System.out.println(line);
+					}
+					catch(IOException i)
+					{
+						System.out.println(i);
+					}
+				}
 			}
-		}
+		};
+		fromServerThread.start();
+		toServerThread.start();
+
 
 		// close the connection
 		try
 		{
-			input.close();
-			out.close();
+			keyboardInput.close();
+			socketOutput.close();
 			socket.close();
 		}
 		catch(IOException i)
@@ -65,6 +94,6 @@ public class Client
 
 	public static void main(String args[])
 	{
-		Client client = new Client("127.0.0.1", 5000);
+		Client client = new Client("127.0.0.1", 55556);
 	}
 } 
