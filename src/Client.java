@@ -41,7 +41,7 @@ public class Client
 				// string to read message from keyboardInput
 				String line = "";
 
-				while (!line.equals("Over"))
+				while (!line.equals("Over") && !Thread.interrupted())
 				{
 					try
 					{
@@ -61,7 +61,7 @@ public class Client
 				// string to read message from keyboardInput
 				String line = "";
 
-				while (!line.equals("Over"))
+				while (!line.equals("Over") && !Thread.interrupted())
 				{
 					try
 					{

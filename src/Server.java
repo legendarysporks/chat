@@ -18,26 +18,34 @@ public class Server extends Thread
 
 	@Override
 	public void run() {
-		while (running) {
+		while (running && !Thread.interrupted()) {
 			try {
 				Socket socket = serverSocket.accept();
 				ClientListener listener = new ClientListener(socket);
 				clients.add(listener);
+				listener.setDaemon(true);
 				listener.start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			killAllListeners();
 		}
 	}
 
 	private void broadcast(String msg) {
 		for (ClientListener client : clients) {
 			try {
-				client.socketOutput.writeUTF(msg);
+				client.send(msg);
 			} catch (IOException e) {
 				e.printStackTrace();
 				// can we remove this client since we can't communicate?
 			}
+		}
+	}
+
+	private void killAllListeners() {
+		for (ClientListener client : clients) {
+			client.interrupt();
 		}
 	}
 
@@ -60,7 +68,7 @@ public class Server extends Thread
 				String line = "";
 
 				// reads message from client until "Over" is sent
-				while (!line.equals("Over")) {
+				while (!line.equals("Over") && !Thread.interrupted()) {
 					try {
 						line = socketInput.readUTF();
 						System.out.println(line);
@@ -80,6 +88,9 @@ public class Server extends Thread
 			} catch (IOException i) {
 				System.out.println(i);
 			}
+		}
+		public void send(String message) throws IOException {
+			socketOutput.writeUTF(message);
 		}
 	}
 
