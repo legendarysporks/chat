@@ -10,9 +10,7 @@ public abstract class GenericClient
 	private DataOutputStream socketOutput = null;
 	private Thread fromServerThread;
 
-	// constructor to put ip address and port
-	public GenericClient(String address, int port)
-	{
+	public void start(String address, int port) {
 		// establish a connection
 		try
 		{
@@ -23,44 +21,58 @@ public abstract class GenericClient
 			socketOutput = new DataOutputStream(socket.getOutputStream());
 			socketInput = new DataInputStream(socket.getInputStream());
 		}
-		catch(UnknownHostException u)
-		{
-			System.out.println(u);
-		}
 		catch(IOException i)
 		{
 			System.out.println(i);
 		}
 
-	}
-
-	public void begin() {
-		Thread fromServerThread = new Thread() {
-			public void run() {
-				while (!isInterrupted())
-				{
-					try
-					{
-						String line = socketInput.readUTF();
-						handleMessageFromServer(line);
-					}
-					catch(IOException i)
-					{
-						System.out.println(i);
-					}
-				}
-			}
-		};
+		fromServerThread = new FromServerThread();
 		fromServerThread.start();
 	}
 
-	public void end() {
+	public void stop() {
 		fromServerThread.interrupt();
+		try {
+			socketInput.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			socketOutput.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
+
+	// ---- subclass interface
 
 	protected void sendMessageToServer(String message) throws IOException {
 		socketOutput.writeUTF(message);
 	}
 
 	protected abstract void handleMessageFromServer(String message);
+
+	// ----
+
+	private class FromServerThread extends Thread {
+		public void run() {
+			while (!isInterrupted())
+			{
+				try
+				{
+					String line = socketInput.readUTF();
+					handleMessageFromServer(line);
+				}
+				catch(IOException i)
+				{
+					System.out.println(i);
+				}
+			}
+		}
+	}
 }

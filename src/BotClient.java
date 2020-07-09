@@ -10,13 +10,6 @@ public class BotClient extends GenericClient
 			"Huh?"
 	};
 
-	// constructor to put ip address and port
-	public BotClient(String address, int port)
-	{
-		super(address, port);
-		super.begin();
-	}
-
 	protected void handleMessageFromServer(String message)
 	{
 		try {
@@ -28,7 +21,7 @@ public class BotClient extends GenericClient
 
 	public static void main(String args[])
 	{
-		BotClient client = new BotClient("127.0.0.1", 55556);
-
+		BotClient client = new BotClient();
+		client.start("127.0.0.1", 55556);
 	}
 }

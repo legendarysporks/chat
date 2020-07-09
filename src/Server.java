@@ -4,10 +4,6 @@ import java.io.IOException;
 
 public class Server extends GenericServer
 {
-	public Server(int port) throws IOException {
-		super(port);
-	}
-
 	protected void handleMessageFromClient(ClientProxy messageClient, String message) {
 		for (ClientProxy client : getClients()) {
 			if (client != messageClient) {
@@ -23,8 +19,8 @@ public class Server extends GenericServer
 	public static void main(String args[])
 	{
 		try{
-				Server test = new Server(55556);
-				test.start();
+				Server test = new Server();
+				test.start(55556);
 		}
 		catch(IOException i){
 			System.out.println(i);
