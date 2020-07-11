@@ -1,106 +1,26 @@
 // A Java program for a Server 
-import java.net.*;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
-public class Server extends Thread
+import java.io.IOException;
+
+public class Server extends GenericServer
 {
-	//initialize socket and socketInput stream
-	private ServerSocket serverSocket;
-	private boolean running = true;
-	private List<ClientListener> clients = new ArrayList<>();
-	// constructor with port
-
-	public Server(int port) throws IOException {
-		serverSocket = new ServerSocket(port);
-	}
-
-	@Override
-	public void run() {
-		while (running && !Thread.interrupted()) {
-			try {
-				Socket socket = serverSocket.accept();
-				ClientListener listener = new ClientListener(socket);
-				clients.add(listener);
-				listener.setDaemon(true);
-				listener.start();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			killAllListeners();
-		}
-	}
-
-	private void broadcast(String msg) {
-		for (ClientListener client : clients) {
-			try {
-				client.send(msg);
-			} catch (IOException e) {
-				e.printStackTrace();
-				// can we remove this client since we can't communicate?
-			}
-		}
-	}
-
-	private void killAllListeners() {
-		for (ClientListener client : clients) {
-			client.interrupt();
-		}
-	}
-
-	private class ClientListener extends Thread {
-		private Socket socket;
-		private DataOutputStream socketOutput;
-		private DataInputStream socketInput;
-
-		public ClientListener(Socket socket) throws IOException {
-			this.socket = socket;
-			socketOutput = new DataOutputStream(socket.getOutputStream());
-			socketInput = new DataInputStream(socket.getInputStream());
-		}
-
-		@Override
-		public void run() {
-			// starts server and waits for a connection
-			try {
-				// takes socketInput from the client socket
-				String line = "";
-
-				// reads message from client until "Over" is sent
-				while (!line.equals("Over") && !Thread.interrupted()) {
-					try {
-						line = socketInput.readUTF();
-						System.out.println(line);
-						broadcast(line);
-
-					} catch (IOException i) {
-						System.out.println(i);
-					}
+	protected void handleMessageFromClient(ClientProxy messageClient, String message) {
+		for (ClientProxy client : getClients()) {
+			if (client != messageClient) {
+				try {
+					client.sendMessageToClient(message);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				running = false;
-				System.out.println("Closing connection");
-
-				// close connection
-				socket.close();
-				socketInput.close();
-				socketOutput.close();
-			} catch (IOException i) {
-				System.out.println(i);
 			}
-		}
-		public void send(String message) throws IOException {
-			socketOutput.writeUTF(message);
 		}
 	}
 
 	public static void main(String args[])
 	{
 		try{
-
-				Server test = new Server(55556);
-				test.start();
-
+				Server test = new Server();
+				test.start(55556);
 		}
 		catch(IOException i){
 			System.out.println(i);
