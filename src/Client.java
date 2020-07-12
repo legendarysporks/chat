@@ -36,14 +36,13 @@ public class Client extends GenericClient
 		public void run() {
 			// string to read message from keyboardInput
 			String line = "";
-
-			while (!line.equals("Over")) {
-				try {
+			try {
+				while (!line.equals("Over") && !interrupted()) {
 					line = keyboardInput.readLine();
 					sendMessageToServer(line);
-				} catch (IOException i) {
-					System.out.println(i);
 				}
+			} catch (IOException i) {
+				System.out.println(i);
 			}
 			Client.this.stop();
 		}

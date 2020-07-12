@@ -45,6 +45,9 @@ public abstract class GenericServer
 	protected void removeClient(ClientProxy client) {
 		clients.remove(client);
 		client.interrupt();
+		if(clients.size() == 0){
+			stop();
+		}
 	}
 
 	// ----
@@ -77,13 +80,15 @@ public abstract class GenericServer
 		public void run() {
 			// starts server and waits for a connection
 			try {
-				while (!isInterrupted()) {
-					try {
-						handleMessageFromClient(this, socketInput.readUTF());
 
-					} catch (IOException i) {
-						System.out.println(i);
+				try {
+					while (!isInterrupted()) {
+						handleMessageFromClient(this, socketInput.readUTF());
 					}
+
+				} catch (IOException i) {
+					System.out.println(i);
+
 				}
 				System.out.println("Closing connection");
 
@@ -91,6 +96,7 @@ public abstract class GenericServer
 				socket.close();
 				socketInput.close();
 				socketOutput.close();
+				removeClient(this);
 			} catch (IOException i) {
 				System.out.println(i);
 			}
