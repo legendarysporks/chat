@@ -51,11 +51,12 @@ public abstract class GenericClient
 
 	// ---- subclass interface
 
-	protected void sendMessageToServer(String message) throws IOException {
+	protected void sendMessageToServer(Command command, String message) throws IOException {
+		socketOutput.writeUTF(command.toString());
 		socketOutput.writeUTF(message);
 	}
 
-	protected abstract void handleMessageFromServer(String message);
+	protected abstract void handleMessageFromServer(Command command, String message);
 
 	// ----
 
@@ -65,8 +66,9 @@ public abstract class GenericClient
 			{
 				try
 				{
+					Command command = Command.valueOf(socketInput.readUTF());
 					String line = socketInput.readUTF();
-					handleMessageFromServer(line);
+					handleMessageFromServer(command, line);
 				}
 				catch(IOException i)
 				{

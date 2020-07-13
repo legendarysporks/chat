@@ -34,7 +34,7 @@ public abstract class GenericServer
 
 	// ---- subclass interface
 
-	protected abstract void handleMessageFromClient(ClientProxy client, String message);
+	protected abstract void handleMessageFromClient(ClientProxy client, Command command, String message);
 
 	protected void addClient(Socket clientSocket) throws IOException {
 		ClientProxy listener = new ClientProxy(clientSocket);
@@ -83,7 +83,9 @@ public abstract class GenericServer
 
 				try {
 					while (!isInterrupted()) {
-						handleMessageFromClient(this, socketInput.readUTF());
+						Command command = Command.valueOf(socketInput.readUTF());
+						String line = socketInput.readUTF();
+						handleMessageFromClient(this, command, line);
 					}
 
 				} catch (IOException i) {
@@ -102,7 +104,8 @@ public abstract class GenericServer
 			}
 		}
 
-		protected void sendMessageToClient(String message) throws IOException {
+		protected void sendMessageToClient(Command command, String message) throws IOException {
+			socketOutput.writeUTF(command.toString());
 			socketOutput.writeUTF(message);
 		}
 	}

@@ -7,6 +7,11 @@ public class Client extends GenericClient
 	// initialize socket and keyboardInput output streams
 	private DataInputStream keyboardInput = null;
 	private Thread toServerThread;
+	private String name;
+
+	public Client(String name) {
+		this.name = name;
+	}
 
 	public void start(String address, int port) {
 		super.start(address, port);
@@ -27,19 +32,33 @@ public class Client extends GenericClient
 		toServerThread.interrupt();
 	}
 
-	protected void handleMessageFromServer(String message)
+	@Override
+	protected void handleMessageFromServer(Command command, String message)
 	{
-		System.out.println(message);
+		switch (command) {
+			case MESSAGE:
+				System.out.println(message);
+				break;
+			case ROSTER:
+			case HELLO:
+			default:
+				break;
+		}
 	}
 
 	private class ToServerThread extends Thread {
 		public void run() {
 			// string to read message from keyboardInput
-			String line = "";
 			try {
-				while (!line.equals("Over") && !interrupted()) {
+				sendMessageToServer(Command.HELLO, name);
+				String line = "";
+				while (!line.equalsIgnoreCase("/over") && !interrupted()) {
 					line = keyboardInput.readLine();
-					sendMessageToServer(line);
+					if (line.equalsIgnoreCase("/list")) {
+						sendMessageToServer(Command.ROSTER, "");
+					} else if(!line.equalsIgnoreCase("/over")){
+						sendMessageToServer(Command.MESSAGE, line);
+					}
 				}
 			} catch (IOException i) {
 				System.out.println(i);
@@ -50,7 +69,7 @@ public class Client extends GenericClient
 
 	public static void main(String args[])
 	{
-		Client client = new Client();
+		Client client = new Client(args[0]);
 		client.start("127.0.0.1", 55556);
 	}
 } 

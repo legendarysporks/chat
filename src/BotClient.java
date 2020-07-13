@@ -10,10 +10,11 @@ public class BotClient extends GenericClient
 			"Huh?"
 	};
 
-	protected void handleMessageFromServer(String message)
+	@Override
+	protected void handleMessageFromServer(Command command, String message)
 	{
 		try {
-			sendMessageToServer(messages[new Random().nextInt(messages.length)]);
+			sendMessageToServer(Command.MESSAGE, messages[new Random().nextInt(messages.length)]);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
