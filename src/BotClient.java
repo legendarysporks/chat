@@ -1,20 +1,22 @@
 // A Java program for a Client 
+import genericstuff.GenericClient;
+import genericstuff.Packet;
+
 import java.io.IOException;
 import java.util.Random;
 
-public class BotClient extends GenericClient
-{
+public class BotClient extends GenericClient {
 	private static String[] messages = {
 			"For sure!",
 			"Like whoa.",
 			"Huh?"
 	};
+	private Random rand = new Random();
 
 	@Override
-	protected void handleMessageFromServer(Command command, String message)
-	{
+	protected void handleMessageFromServer(Packet command) {
 		try {
-			sendMessageToServer(Command.MESSAGE, messages[new Random().nextInt(messages.length)]);
+			sendMessageToServer(new MessagePacket(messages[rand.nextInt(messages.length)]));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

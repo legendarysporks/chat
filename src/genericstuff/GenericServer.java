@@ -1,12 +1,13 @@
-// A Java program for a Server 
-import java.net.*;
-import java.io.*;
+package genericstuff;// A Java program for a Server
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public abstract class GenericServer
-{
+public abstract class GenericServer {
 	//initialize socket and socketInput stream
 	private ServerSocket serverSocket;
 	private List<ClientProxy> clients = new ArrayList<>();
@@ -34,7 +35,7 @@ public abstract class GenericServer
 
 	// ---- subclass interface
 
-	protected abstract void handleMessageFromClient(ClientProxy client, Command command, String message);
+	protected abstract void handleMessageFromClient(ClientProxy client, Packet packet);
 
 	protected void addClient(Socket clientSocket) throws IOException {
 		ClientProxy listener = new ClientProxy(clientSocket);
@@ -66,47 +67,33 @@ public abstract class GenericServer
 	}
 
 	protected class ClientProxy extends Thread {
-		private Socket socket;
-		private DataOutputStream socketOutput;
-		private DataInputStream socketInput;
+		private final PacketConnection connection;
 
 		public ClientProxy(Socket socket) throws IOException {
-			this.socket = socket;
-			socketOutput = new DataOutputStream(socket.getOutputStream());
-			socketInput = new DataInputStream(socket.getInputStream());
+			connection = new PacketConnection(socket);
 		}
 
 		@Override
 		public void run() {
 			// starts server and waits for a connection
+
 			try {
-
-				try {
-					while (!isInterrupted()) {
-						Command command = Command.valueOf(socketInput.readUTF());
-						String line = socketInput.readUTF();
-						handleMessageFromClient(this, command, line);
-					}
-
-				} catch (IOException i) {
-					System.out.println(i);
-
+				while (!isInterrupted()) {
+					handleMessageFromClient(this, connection.read());
 				}
-				System.out.println("Closing connection");
 
-				// close connection
-				socket.close();
-				socketInput.close();
-				socketOutput.close();
-				removeClient(this);
 			} catch (IOException i) {
 				System.out.println(i);
+				GenericServer.this.stop();
 			}
+			System.out.println("Closing connection");
+
+			connection.close();
+			removeClient(this);
 		}
 
-		protected void sendMessageToClient(Command command, String message) throws IOException {
-			socketOutput.writeUTF(command.toString());
-			socketOutput.writeUTF(message);
+		protected void sendMessageToClient(Packet packet) throws IOException {
+			connection.write(packet);
 		}
 	}
 }

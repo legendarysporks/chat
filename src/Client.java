@@ -1,9 +1,13 @@
 // A Java program for a Client 
-import java.net.*;
-import java.io.*;
 
-public class Client extends GenericClient
-{
+import genericstuff.GenericClient;
+import genericstuff.Packet;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Collection;
+
+public class Client extends GenericClient {
 	// initialize socket and keyboardInput output streams
 	private DataInputStream keyboardInput = null;
 	private Thread toServerThread;
@@ -33,16 +37,19 @@ public class Client extends GenericClient
 	}
 
 	@Override
-	protected void handleMessageFromServer(Command command, String message)
-	{
-		switch (command) {
-			case MESSAGE:
-				System.out.println(message);
-				break;
-			case ROSTER:
-			case HELLO:
-			default:
-				break;
+	protected void handleMessageFromServer(Packet command) {
+		if (command instanceof MessagePacket) {
+			System.out.println(((MessagePacket) command));
+		} else if (command instanceof RosterPacket) {
+			RosterPacket rosterPacket = (RosterPacket) command;
+			Collection<String> names = rosterPacket.getNames();
+			if (names.size() == 0) {
+				System.out.println("You are the first to arrive");
+			} else {
+				for (String name : names) {
+					System.out.println("\t" + name);
+				}
+			}
 		}
 	}
 
@@ -50,14 +57,14 @@ public class Client extends GenericClient
 		public void run() {
 			// string to read message from keyboardInput
 			try {
-				sendMessageToServer(Command.HELLO, name);
+				sendMessageToServer(new HelloPacket(name));
 				String line = "";
 				while (!line.equalsIgnoreCase("/over") && !interrupted()) {
 					line = keyboardInput.readLine();
 					if (line.equalsIgnoreCase("/list")) {
-						sendMessageToServer(Command.ROSTER, "");
-					} else if(!line.equalsIgnoreCase("/over")){
-						sendMessageToServer(Command.MESSAGE, line);
+						sendMessageToServer(new RosterPacket());
+					} else if (!line.equalsIgnoreCase("/over")) {
+						sendMessageToServer(new MessagePacket(line));
 					}
 				}
 			} catch (IOException i) {
