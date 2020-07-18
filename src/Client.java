@@ -50,6 +50,10 @@ public class Client extends GenericClient {
 					System.out.println("\t" + name);
 				}
 			}
+		} else if (command instanceof HelloPacket) {
+			System.out.println(command.toString() + " joined");
+		} else if (command instanceof GoodbyePacket) {
+			System.out.println(command.toString() + " left");
 		}
 	}
 
@@ -64,7 +68,7 @@ public class Client extends GenericClient {
 					if (line.equalsIgnoreCase("/list")) {
 						sendMessageToServer(new RosterPacket());
 					} else if (!line.equalsIgnoreCase("/over")) {
-						sendMessageToServer(new MessagePacket(line));
+						sendMessageToServer(new GoodbyePacket());
 					}
 				}
 			} catch (IOException i) {

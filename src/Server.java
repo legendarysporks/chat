@@ -16,7 +16,7 @@ public class Server extends GenericServer
 			HelloPacket hello = (HelloPacket) packet;
 			String name = hello.getName();
 			nameList.put(messageClient, name);
-			broadcastFromClient(messageClient, new MessagePacket(name + " joined"));
+			broadcastFromClient(messageClient, new HelloPacket(name));
 		} else if (packet instanceof RosterPacket) {
 			try {
 				messageClient.sendMessageToClient(new RosterPacket(nameList.values()));
@@ -25,6 +25,8 @@ public class Server extends GenericServer
 			}
 		} else if (packet instanceof MessagePacket) {
 			broadcastFromClient(messageClient, packet);
+		} else if (packet instanceof GoodbyePacket) {
+			removeClient(messageClient);
 		}
 	}
 
@@ -32,7 +34,7 @@ public class Server extends GenericServer
 		super.removeClient(client);
 		String name = nameList.get(client);
 		nameList.remove(client);
-		broadcastFromClient(client, new MessagePacket(name + " left"));
+		broadcastFromClient(client, new GoodbyePacket(name));
 	}
 
 	protected void broadcastFromClient(ClientProxy messageClient, Packet message) {

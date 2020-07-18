@@ -4,13 +4,13 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class HelloPacket implements Packet {
+public class GoodbyePacket implements Packet {
 	private String name;
 
-	public HelloPacket() {
+	public GoodbyePacket() {
 	}
 
-	public HelloPacket(String name) {
+	public GoodbyePacket(String name) {
 		this.name = name;
 	}
 
