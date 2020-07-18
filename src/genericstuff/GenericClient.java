@@ -21,6 +21,7 @@ public abstract class GenericClient {
 	}
 
 	public void stop() {
+		fromServerThread.interrupt();
 		connection.close();
 	}
 

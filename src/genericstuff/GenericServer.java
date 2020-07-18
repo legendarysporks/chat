@@ -25,6 +25,9 @@ public abstract class GenericServer {
 	}
 
 	public void stop() {
+		for (ClientProxy client : clients) {
+			client.interrupt();
+		}
 		joiner.interrupt();
 		try {
 			serverSocket.close();
@@ -92,7 +95,7 @@ public abstract class GenericServer {
 			removeClient(this);
 		}
 
-		protected void sendMessageToClient(Packet packet) throws IOException {
+		public void sendMessageToClient(Packet packet) throws IOException {
 			connection.write(packet);
 		}
 	}
